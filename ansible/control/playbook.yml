@@ -1,0 +1,61 @@
+- name: Configure nginx on managed nodes
+  hosts: managed
+  become: true
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Disable default nginx site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Write nginx site config
+      ansible.builtin.copy:
+        dest: /etc/nginx/sites-enabled/my_site
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+
+              root /var/www/my_site;
+              index index.html;
+
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+          }
+
+    - name: Create web root directory
+      ansible.builtin.file:
+        path: /var/www/my_site
+        state: directory
+        mode: '0755'
+
+    - name: Create index.html
+      ansible.builtin.copy:
+        dest: /var/www/my_site/index.html
+        content: |
+          <html>
+            <head><title>Ansible on Containers</title></head>
+            <body>
+              <h1>Hello from {{ inventory_hostname }}</h1>
+            </body>
+          </html>
+
+    - name: Ensure nginx runtime dir exists
+      ansible.builtin.file:
+        path: /run/nginx
+        state: directory
+        mode: '0755'
+
+    - name: Start nginx in container
+      ansible.builtin.shell: |
+        nginx -t
+        nginx
+      args:
+        executable: /bin/bash
+      changed_when: false

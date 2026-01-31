@@ -1,0 +1,27 @@
+services:
+  control:
+    build: ./control
+    container_name: control
+    tty: true
+    stdin_open: true
+    depends_on:
+      - managed1
+      - managed2
+
+  managed1:
+    build: ./managed
+    container_name: managed1
+    tty: true
+    stdin_open: true
+    ports:
+      - "2222:22"
+      - "8081:80"
+
+  managed2:
+    build: ./managed
+    container_name: managed2
+    tty: true
+    stdin_open: true
+    ports:
+      - "2223:22"
+      - "8082:80"
