@@ -19,4 +19,5 @@ RUN sed -i 's/#\?PermitRootLogin .*/PermitRootLogin prohibit-password/' /etc/ssh
 EXPOSE 22
 
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
